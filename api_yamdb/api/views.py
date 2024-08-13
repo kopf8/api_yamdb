@@ -1,4 +1,3 @@
-from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
@@ -13,6 +12,7 @@ from .permissions import IsOwnerOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleWriteSerializer)
+from .validators import validate_review_unique
 
 
 class CategoryViewSet(ModelMixinViewSet):
@@ -59,7 +59,9 @@ class ReviewViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         title = self.get_title()
-        serializer.save(author=self.request.user, title=title)
+        author = self.request.user
+        validate_review_unique(title, author)
+        serializer.save(title=title, author=author)
 
 
 class CommentViewSet(ModelViewSet):
