@@ -35,9 +35,7 @@ class GenreViewSet(ModelMixinViewSet):
 
 class TitleViewSet(ModelViewSet):
     """Viewset for titles"""
-    queryset = Title.objects.annotate(
-        rating=Avg('reviews__score')
-    ).all()
+    queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
 
