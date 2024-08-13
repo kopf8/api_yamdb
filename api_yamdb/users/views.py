@@ -21,6 +21,7 @@ User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     filter_backends = (SearchFilter,)
@@ -125,6 +126,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class SignupView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = SignupSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -151,6 +153,10 @@ class SignupView(generics.CreateAPIView):
 
         # Отправка кода подтверждения по email
         send_mail(
+            'Your confirmation code',
+            f'Your confirmation code is {confirmation_code}',
+            'from@example.com',
+            [serializer.validated_data['email']],
             'Your confirmation code',
             f'Your confirmation code is {confirmation_code}',
             'from@example.com',
