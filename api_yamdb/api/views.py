@@ -1,10 +1,11 @@
-from api.filters import TitleFilter
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.viewsets import ModelViewSet
+
+from api.filters import TitleFilter
 from reviews.models import Category, Genre, Review, Title
 
 from .mixins import ModelMixinViewSet
