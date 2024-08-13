@@ -73,10 +73,10 @@ class Title(models.Model):
         verbose_name='Genre',
         through='TitleGenre',
     )
-    # rating = models.FloatField(
-    #     verbose_name='Rating',
-    #     null=True
-    # )
+    rating = models.FloatField(
+        verbose_name='Rating',
+        null=True
+    )
 
     class Meta:
         ordering = ('name',)
