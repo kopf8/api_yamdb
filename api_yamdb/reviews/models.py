@@ -2,83 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from .validators import validate_username, validate_year
-
-USER = 'user'
-ADMIN = 'admin'
-MODERATOR = 'moderator'
-
-ROLE_CHOICES = [
-    (USER, USER),
-    (ADMIN, ADMIN),
-    (MODERATOR, MODERATOR),
-]
-
-
-class CustomUser(AbstractUser):
-    """Custom User model"""
-    username = models.CharField(
-        verbose_name='Username',
-        validators=(validate_username,),
-        max_length=150,
-        unique=True,
-        blank=False,
-        null=False
-    )
-    email = models.EmailField(
-        verbose_name='Email',
-        max_length=254,
-        unique=True,
-        blank=False,
-        null=False
-    )
-    role = models.CharField(
-        verbose_name='User Role',
-        max_length=16,
-        choices=ROLE_CHOICES,
-        default=USER,
-        blank=True
-    )
-    bio = models.TextField(
-        verbose_name='User bio',
-        blank=True,
-    )
-    first_name = models.CharField(
-        verbose_name='First name',
-        max_length=150,
-        blank=True
-    )
-    last_name = models.CharField(
-        verbose_name='Last name',
-        max_length=150,
-        blank=True
-    )
-    confirmation_code = models.CharField(
-        verbose_name='Confirmation code',
-        max_length=255,
-        null=True,
-        blank=False,
-    )
-
-    @property
-    def is_user(self):
-        return self.role == USER
-
-    @property
-    def is_admin(self):
-        return self.role == ADMIN
-
-    @property
-    def is_moderator(self):
-        return self.role == MODERATOR
-
-    class Meta:
-        ordering = ('id',)
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
-
-    def __str__(self):
-        return self.username
+from users.models import CustomUser
 
 
 class Category(models.Model):
@@ -129,7 +53,6 @@ class Title(models.Model):
     )
     year = models.IntegerField(
         verbose_name='Year',
-        validators=(validate_year, )
     )
     category = models.ForeignKey(
         Category,
@@ -150,10 +73,10 @@ class Title(models.Model):
         verbose_name='Genre',
         through='TitleGenre',
     )
-    rating = models.FloatField(
-        verbose_name='Rating',
-        null=True
-    )
+    # rating = models.FloatField(
+    #     verbose_name='Rating',
+    #     null=True
+    # )
 
     class Meta:
         ordering = ('name',)
