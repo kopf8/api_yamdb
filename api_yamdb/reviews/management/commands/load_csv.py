@@ -29,14 +29,18 @@ class Command(BaseCommand):
     help = "Import data from csv files."
 
     def handle(self, *args, **kwargs):
-        for model, filename in TABLES.items():
-            with open(
-                f'{settings.BASE_DIR}/static/data/{filename}',
-                'r',
-                encoding='utf-8'
-            ) as csv_file:
-                reader = csv.DictReader(csv_file)
-                model.objects.bulk_create(model(**data) for data in reader)
-        self.stdout.write(self.style.SUCCESS(
-            'Data from all CSV files was successfully imported into database.'
-        ))
+        try:
+            for model, filename in TABLES.items():
+                with open(
+                    f'{settings.BASE_DIR}/static/data/{filename}',
+                    'r',
+                    encoding='utf-8'
+                ) as csv_file:
+                    reader = csv.DictReader(csv_file)
+                    model.objects.bulk_create(model(**data) for data in reader)
+            self.stdout.write(self.style.SUCCESS(
+                'Data from all CSV files was successfully imported into '
+                'database.'
+            ))
+        except FileNotFoundError as e:
+            self.stdout.write(self.style.ERROR(e))
