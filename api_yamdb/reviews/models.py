@@ -58,7 +58,6 @@ class CustomUser(AbstractUser):
         max_length=255,
         null=True,
         blank=False,
-        default='XXXX'
     )
 
     @property
@@ -135,7 +134,7 @@ class Title(models.Model):
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
-        related_name='reviews',
+        related_name='titles',
         verbose_name='Category',
         null=True,
         blank=True
@@ -147,7 +146,7 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genre,
-        related_name='reviews',
+        related_name='titles',
         verbose_name='Genre',
         through='TitleGenre',
     )
@@ -171,14 +170,14 @@ class TitleGenre(models.Model):
     title = models.ForeignKey(
         Title,
         verbose_name='Title',
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
     genre = models.ForeignKey(
         Genre,
         verbose_name='Genre',
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
@@ -227,7 +226,7 @@ class Review(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=('title', 'author', ),
-                name='unique review'
+                name='unique_review'
             )]
         ordering = ('pub_date',)
 

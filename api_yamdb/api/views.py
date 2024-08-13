@@ -1,13 +1,53 @@
-from rest_framework import viewsets
+from api.filters import TitleFilter
+from django.db.models import Avg
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from reviews.models import Review, Title
+from rest_framework.viewsets import ModelViewSet
+from reviews.models import Category, Genre, Review, Title
 
+from .mixins import ModelMixinViewSet
 from .permissions import IsOwnerOrReadOnly
-from .serializers import CommentSerializer, ReviewSerializer
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer,
+                          TitleReadSerializer, TitleWriteSerializer)
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(ModelMixinViewSet):
+    """Viewset for categories"""
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    filter_backends = (SearchFilter, )
+    search_fields = ('name', )
+    lookup_field = 'slug'
+
+
+class GenreViewSet(ModelMixinViewSet):
+    """Viewset for genres"""
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('name', )
+    lookup_field = 'slug'
+
+
+class TitleViewSet(ModelViewSet):
+    """Viewset for titles"""
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleWriteSerializer
+
+
+class ReviewViewSet(ModelViewSet):
+    """Viewset for reviews"""
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
 
@@ -23,7 +63,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(ModelViewSet):
+    """Viewset for comments"""
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
 
