@@ -151,6 +151,10 @@ class Title(models.Model):
         verbose_name='Genre',
         through='TitleGenre',
     )
+    rating = models.FloatField(
+        verbose_name='Rating',
+        null=True
+    )
 
     class Meta:
         ordering = ('name',)
@@ -229,6 +233,21 @@ class Review(models.Model):
 
     def __str__(self):
         return self.text
+
+    def update_title_rating(self):
+        rating = self.title.reviews.aggregate(
+            models.Avg('score')
+        )['score__avg']
+        self.title.rating = rating
+        self.title.save()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.update_title_rating()
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.update_title_rating()
 
 
 class Comment(models.Model):

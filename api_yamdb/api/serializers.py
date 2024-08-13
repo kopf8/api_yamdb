@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from reviews.models import Review
+from reviews.models import Comment, Review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -16,9 +16,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = '__all__'
 
-    def validate_score(self, value):
-        if not (1 <= value <= 10):
-            raise serializers.ValidationError(
-                'Оценка должна быть в диапазоне от 1 до 10.'
-            )
-        return value
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        model = Comment
+        fields = '__all__'
+        read_only_fields = ('review',)
