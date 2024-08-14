@@ -11,7 +11,7 @@ from api.filters import TitleFilter
 from reviews.models import Category, Genre, Review, Title
 
 from .mixins import ModelMixinViewSet
-from .permissions import IsAdminModeratorOwnerOrReadOnly
+from .permissions import IsAdminModeratorOwnerOrReadOnly, IsAdminUserOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleWriteSerializer)
@@ -21,7 +21,7 @@ from .validators import validate_review_unique
 class CategoryViewSet(ModelMixinViewSet):
     """Viewset for categories"""
     queryset = Category.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAdminUserOrReadOnly,)
     serializer_class = CategorySerializer
     filter_backends = (SearchFilter, )
     search_fields = ('name', )
@@ -31,7 +31,7 @@ class CategoryViewSet(ModelMixinViewSet):
 class GenreViewSet(ModelMixinViewSet):
     """Viewset for genres"""
     queryset = Genre.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAdminUserOrReadOnly,)
     serializer_class = GenreSerializer
     filter_backends = (SearchFilter,)
     search_fields = ('name', )
@@ -41,7 +41,7 @@ class GenreViewSet(ModelMixinViewSet):
 class TitleViewSet(ModelViewSet):
     """Viewset for titles"""
     queryset = Title.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAdminUserOrReadOnly,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
 
