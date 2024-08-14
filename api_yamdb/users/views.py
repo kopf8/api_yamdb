@@ -1,7 +1,7 @@
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 
-import random
+import secrets
 
 from rest_framework import generics, status, permissions, viewsets
 from rest_framework.decorators import action
@@ -131,25 +131,17 @@ class SignupView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        user, created = CustomUser.objects.get_or_create(
+        user, created = CustomUser.objects.update_or_create(
             email=serializer.validated_data['email'],
-            defaults={
-                'username': serializer.validated_data['username'],
-            }
-        )
-        if not created:
-            user.username = serializer.validated_data['username']
-            user.save()
-
-        # Генерация и сохранение кода подтверждения
-        confirmation_code = str(random.randint(100000, 999999))
+            username=serializer.validated_data['username'])
+        # Generate and save confirmation code securely
+        confirmation_code = str(secrets.randbelow(1000000)).zfill(6)
         ConfirmationCode.objects.update_or_create(
             user=user,
             defaults={'code': confirmation_code}
         )
 
-        # Отправка кода подтверждения по email
+        # Send confirmation code via email
         send_mail(
             'Your confirmation code',
             f'Your confirmation code is {confirmation_code}',
@@ -157,7 +149,8 @@ class SignupView(generics.CreateAPIView):
             [serializer.validated_data['email']],
             fail_silently=False,
         )
-        # Возвращаем статус 200 и данные пользователя
+
+        # Always return a 200 OK status and user data
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
