@@ -15,12 +15,13 @@ class UserSerializer(serializers.ModelSerializer):
     )
     email = serializers.EmailField(
         max_length=254,
-        validators=[validate_email]
+        # validators=[validate_email]
     )
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio',
+                  'role')
 
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -30,8 +31,21 @@ class SignupSerializer(serializers.ModelSerializer):
     )
     email = serializers.EmailField(
         max_length=254,
-        validators=[validate_email]
+        # validators=[validate_email]
     )
+
+    def validate(self, data):
+        """Checks if username and e-mail match each other"""
+        if (CustomUser.objects.filter(username=data['username']).exists()
+                and not CustomUser.objects
+                .filter(email=data['email']).exists()):
+            raise serializers.ValidationError(
+                'Incorrect e-mail')
+        elif (not CustomUser.objects.filter(username=data['username']).exists()
+              and CustomUser.objects.filter(email=data['email']).exists()):
+            raise serializers.ValidationError(
+                'Incorrect username')
+        return data
 
     class Meta:
         model = CustomUser

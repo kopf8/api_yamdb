@@ -56,7 +56,7 @@ class CustomUser(AbstractUser):
     )
     bio = models.TextField(
         verbose_name='User bio',
-        blank=True,
+        blank=True
     )
     first_name = models.CharField(
         verbose_name='First name',
@@ -103,5 +103,3 @@ class CustomUser(AbstractUser):
 class ConfirmationCode(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     code = models.CharField(max_length=6)
-
-
