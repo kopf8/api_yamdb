@@ -8,8 +8,14 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(validators=[validate_username])
-    email = serializers.EmailField(validators=[validate_email])
+    username = serializers.CharField(
+        max_length=150,
+        validators=[validate_username]
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        validators=[validate_email]
+    )
 
     class Meta:
         model = CustomUser
@@ -17,8 +23,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class SignupSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(validators=[validate_username])
-    email = serializers.EmailField(validators=[validate_email])
+    username = serializers.CharField(
+        max_length=150,
+        validators=[validate_username]
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        validators=[validate_email]
+    )
 
     class Meta:
         model = CustomUser
