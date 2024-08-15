@@ -141,18 +141,18 @@ class SignupView(generics.CreateAPIView):
         )
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        email = serializer.validated_data['email']
-        username = serializer.validated_data['username']
-
         # Поиск пользователя с этим email и username.
+        username = request.data.get('username', None)
+        email = request.data.get('email', None)
         user = CustomUser.objects.filter(email=email, username=username).first()
-
         if user:
             self.send_confirmation_code(user, email)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_200_OK)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        username = serializer.validated_data['username']
 
         # Проверка на случай, если email и username заняты разными пользователями.
         existing_user = CustomUser.objects.filter(email=email).first()

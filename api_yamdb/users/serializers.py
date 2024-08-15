@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
     )
     email = serializers.EmailField(
         max_length=254,
-        # validators=[validate_email]
+        validators=[validate_email]
     )
 
     class Meta:
@@ -31,7 +31,7 @@ class SignupSerializer(serializers.ModelSerializer):
     )
     email = serializers.EmailField(
         max_length=254,
-        # validators=[validate_email]
+        validators=[validate_email]
     )
 
     class Meta:

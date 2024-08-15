@@ -15,8 +15,8 @@ def validate_username(value):
             f'Unaccepted symbols <{value}> in nickname.',
         )
 
-    # if CustomUser.objects.filter(username=value).exists():
-    #     raise serializers.ValidationError("This username is already taken.")
+    if CustomUser.objects.filter(username=value).exists():
+        raise serializers.ValidationError("This username is already taken.")
 
     return value
 
