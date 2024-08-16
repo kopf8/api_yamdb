@@ -4,7 +4,6 @@ from rest_framework import serializers
 
 from .models import ConfirmationCode, CustomUser
 from .validators import validate_username, validate_email
-
 User = get_user_model()
 
 
