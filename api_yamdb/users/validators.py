@@ -11,12 +11,23 @@ def validate_username(value, instance=None):
     if re.search(r'^[a-zA-Z][a-zA-Z0-9-_.]{1,30}$', value) is None:
         raise serializers.ValidationError(f'Unaccepted symbols <{value}> in nickname.')
 
-    if CustomUser.objects.filter(username=value).exists():
+    user_queryset = CustomUser.objects.filter(username=value)
+    if instance is not None:
+        user_queryset = user_queryset.exclude(pk=instance.pk)
+
+    if user_queryset.exists():
         raise serializers.ValidationError("This username is already taken.")
+
     return value
 
 
 def validate_email(value, instance=None):
-    if CustomUser.objects.filter(email=value).exists():
+    # Проверка уникальности с учетом instance
+    email_queryset = CustomUser.objects.filter(email=value)
+    if instance is not None:
+        email_queryset = email_queryset.exclude(pk=instance.pk)
+
+    if email_queryset.exists():
         raise serializers.ValidationError("This email is already in use.")
+
     return value
