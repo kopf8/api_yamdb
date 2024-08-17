@@ -14,6 +14,7 @@ from .models import ConfirmationCode, CustomUser
 from .serializers import (ConfirmationCodeSerializer, SignupSerializer,
                           UserSerializer)
 
+
 User = get_user_model()
 
 
