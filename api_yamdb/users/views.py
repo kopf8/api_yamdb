@@ -51,7 +51,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         # Проверка, что пользователь является администратором
-        if not request.user.is_admin:
+        if not request.user.is_admin and not request.user.is_superuser:
             return Response(
                 {"detail": "You do not have permission to view this list."},
                 status=status.HTTP_403_FORBIDDEN
@@ -145,10 +145,11 @@ class SignupView(generics.CreateAPIView):
         username = request.data.get('username', None)
         email = request.data.get('email', None)
         user = CustomUser.objects.filter(email=email, username=username).first()
+
         if user:
             self.send_confirmation_code(user, email)
-            return Response(status=status.HTTP_200_OK)
-
+            return Response(request.data, status=status.HTTP_200_OK)
+        
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
@@ -157,15 +158,9 @@ class SignupView(generics.CreateAPIView):
         # Проверка на случай, если email и username заняты разными пользователями.
         existing_user = CustomUser.objects.filter(email=email).first()
         existing_username = CustomUser.objects.filter(username=username).first()
-        if existing_user and existing_username and existing_user != existing_username:
-            raise ValidationError({
-                'email': ['This email is already in use by another user.'],
-                'username': ['This username is already in use by another user.']
-            })
-
+        
         if existing_user:
             raise ValidationError({'email': ['This email is already in use by another user.']})
-
         if existing_username:
             raise ValidationError({'username': ['This username is already in use by another user.']})
 
