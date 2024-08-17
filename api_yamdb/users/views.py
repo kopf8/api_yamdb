@@ -1,9 +1,8 @@
-from django.core.mail import send_mail
-from django.contrib.auth import get_user_model
-
 import random
 
-from rest_framework import generics, status, permissions, viewsets
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.filters import SearchFilter
@@ -12,9 +11,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import ConfirmationCode, CustomUser
-from .serializers import (
-    SignupSerializer, ConfirmationCodeSerializer, UserSerializer)
-
+from .serializers import (ConfirmationCodeSerializer, SignupSerializer,
+                          UserSerializer)
 
 User = get_user_model()
 
@@ -156,18 +154,16 @@ class SignupView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         username = serializer.validated_data['username']
+
         # Проверка на случай, если email и username заняты разными пользователями.
         existing_user = CustomUser.objects.filter(email=email).first()
         existing_username = CustomUser.objects.filter(username=username).first()
-        if existing_user and existing_username and existing_user != existing_username:
-            raise ValidationError({
-                'email': ['This email is already in use by another user.'],
-                'username': ['This username is already in use by another user.']
-            })
+        
         if existing_user:
             raise ValidationError({'email': ['This email is already in use by another user.']})
         if existing_username:
             raise ValidationError({'username': ['This username is already in use by another user.']})
+
         # Если ни email, ни username не заняты, создаем нового пользователя.
         user = serializer.save()
         self.send_confirmation_code(user, email)

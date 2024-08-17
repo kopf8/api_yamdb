@@ -11,7 +11,8 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio',
+                  'role')
 
     def validate(self, data):
         instance = self.instance if self.instance is not None else CustomUser()

@@ -15,6 +15,11 @@ def validate_username(value, instance=None):
     if instance is not None:
         user_queryset = user_queryset.exclude(pk=instance.pk)
 
+    if re.search(r'^[a-zA-Z][a-zA-Z0-9-_.@]{1,20}$', value) is None:
+        raise serializers.ValidationError(
+            f'Unaccepted symbols <{value}> in nickname.',
+        )
+
     if user_queryset.exists():
         raise serializers.ValidationError("This username is already taken.")
 

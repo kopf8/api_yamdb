@@ -56,7 +56,7 @@ class CustomUser(AbstractUser):
     )
     bio = models.TextField(
         verbose_name='User bio',
-        blank=True,
+        blank=True
     )
     first_name = models.CharField(
         verbose_name='First name',
