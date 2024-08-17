@@ -1,5 +1,16 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+
+
+USER = 'user'
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+
+ROLE_CHOICES = [
+    (USER, USER),
+    (ADMIN, ADMIN),
+    (MODERATOR, MODERATOR),
+]
 
 
 class CustomUserManager(BaseUserManager):
@@ -20,33 +31,73 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, username, password, **extra_fields)
 
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
-    USER_ROLES = (
-        ('user', 'User'),
-        ('moderator', 'Moderator'),
-        ('admin', 'Admin'),
+class CustomUser(AbstractUser):
+    """Custom User model"""
+    username = models.CharField(
+        verbose_name='Username',
+        max_length=150,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    email = models.EmailField(
+        verbose_name='Email',
+        max_length=254,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    role = models.CharField(
+        verbose_name='User Role',
+        max_length=16,
+        choices=ROLE_CHOICES,
+        default=USER,
+        blank=True
+    )
+    bio = models.TextField(
+        verbose_name='User bio',
+        blank=True
+    )
+    first_name = models.CharField(
+        verbose_name='First name',
+        max_length=150,
+        blank=True
+    )
+    last_name = models.CharField(
+        verbose_name='Last name',
+        max_length=150,
+        blank=True
+    )
+    confirmation_code = models.CharField(
+        verbose_name='Confirmation code',
+        max_length=255,
+        null=True,
+        blank=False
     )
 
-    email = models.EmailField(unique=True)
-    username = models.CharField(max_length=150, unique=True)
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=150, blank=True)
-    bio = models.TextField(blank=True)
-    role = models.CharField(max_length=9, choices=USER_ROLES, default='user')
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    @property
+    def is_user(self):
+        return self.role == USER
 
-    objects = CustomUserManager()
+    @property
+    def is_admin(self):
+        return self.role == ADMIN
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
 
-    def __str__(self):
-        return self.email
+    @property
+    def is_admin_or_super_user(self):
+        return self.role == ADMIN or self.is_superuser
 
     class Meta:
-        verbose_name = 'пользователь'
-        verbose_name_plural = 'Пользователи'
+        ordering = ('id',)
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+
+    def __str__(self):
+        return self.username
 
 
 class ConfirmationCode(models.Model):
