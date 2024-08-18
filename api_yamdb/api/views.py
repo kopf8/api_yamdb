@@ -63,8 +63,10 @@ class TitleViewSet(ModelViewSet):
                 {"detail": "You do not have permission to modify this title."},
                 status=status.HTTP_403_FORBIDDEN
             )
-        if (request.user.role == 'moderator' and request.title !=
-                title_to_update):
+        if (
+            request.user.role == 'moderator'
+            and request.title != title_to_update
+        ):
             return Response(
                 {"detail": "Moderators cannot modify other users' titles."},
                 status=status.HTTP_403_FORBIDDEN

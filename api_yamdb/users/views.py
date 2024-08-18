@@ -14,7 +14,6 @@ from .models import ConfirmationCode, CustomUser
 from .serializers import (ConfirmationCodeSerializer, SignupSerializer,
                           UserSerializer)
 
-
 User = get_user_model()
 
 
@@ -145,25 +144,37 @@ class SignupView(generics.CreateAPIView):
         # Поиск пользователя с этим email и username.
         username = request.data.get('username', None)
         email = request.data.get('email', None)
-        user = CustomUser.objects.filter(email=email, username=username).first()
+        user = CustomUser.objects.filter(
+            email=email,
+            username=username
+        ).first()
 
         if user:
             self.send_confirmation_code(user, email)
             return Response(request.data, status=status.HTTP_200_OK)
-        
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         username = serializer.validated_data['username']
 
-        # Проверка на случай, если email и username заняты разными пользователями.
+        # Проверка на случай, если email и username заняты разными
+        # пользователями.
         existing_user = CustomUser.objects.filter(email=email).first()
-        existing_username = CustomUser.objects.filter(username=username).first()
-        
+        existing_username = CustomUser.objects.filter(
+            username=username
+        ).first()
+
         if existing_user:
-            raise ValidationError({'email': ['This email is already in use by another user.']})
+            raise ValidationError(
+                {'email': ['This email is already in use by another user.']}
+            )
         if existing_username:
-            raise ValidationError({'username': ['This username is already in use by another user.']})
+            raise ValidationError(
+                {'username': [
+                    'This username is already in use by another user.'
+                ]}
+            )
 
         # Если ни email, ни username не заняты, создаем нового пользователя.
         user = serializer.save()

@@ -1,10 +1,9 @@
 from django.contrib.auth import get_user_model
-import re
-
 from rest_framework import serializers
 
 from .models import ConfirmationCode, CustomUser
-from .validators import validate_username, validate_email
+from .validators import validate_email, validate_username
+
 User = get_user_model()
 
 
