@@ -160,12 +160,12 @@ class SignupView(generics.CreateAPIView):
 
         # Проверка на случай, если email и username заняты разными
         # пользователями.
-        existing_user = CustomUser.objects.filter(email=email).first()
+        existing_email = CustomUser.objects.filter(email=email).first()
         existing_username = CustomUser.objects.filter(
             username=username
         ).first()
 
-        if existing_user:
+        if existing_email:
             raise ValidationError(
                 {'email': ['This email is already in use by another user.']}
             )
