@@ -1,23 +1,39 @@
 from rest_framework import permissions
 
 
-class IsAdminModeratorOwnerOrReadOnly(permissions.BasePermission):
-
-    def has_object_permission(self, request, view, obj):
-        return (
-            request.method in permissions.SAFE_METHODS
-            or obj.author == request.user
-            or request.user.role in ('moderator', 'admin')
-            or request.user.is_superuser
-        )
-
-
-class IsAdminUserOrReadOnly(permissions.BasePermission):
-    """Admin rights or readonly."""
-
+class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.user.is_admin_or_super_user
-            or request.method in permissions.SAFE_METHODS
+            and request.user.role == 'admin'
         )
+
+
+class IsModerator(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and request.user.role == 'moderator'
+        )
+
+
+class IsOwner(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and request.method in ('PATCH', 'PUT', 'DELETE')
+            and view.get_object().author == request.user
+        )
+
+
+class IsAuthenticated(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and request.method not in ('PATCH', 'PUT', 'DELETE')
+        )
+
+
+class ReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.method in permissions.SAFE_METHODS
