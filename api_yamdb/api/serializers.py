@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from reviews.models import Category, Comment, CustomUser, Genre, Review, Title
 
+from .validators import validate_review_unique
+
 
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
@@ -71,6 +73,15 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
+
+    def validate(self, data):
+        request = self.context['request']
+        if request.method == 'POST':
+            validate_review_unique(
+                self.context['view'].get_title(),
+                request.user
+            )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):

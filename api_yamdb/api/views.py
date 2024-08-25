@@ -8,17 +8,16 @@ from reviews.models import Category, Genre, Review, Title
 
 from .mixins import ModelMixinViewSet
 from .permissions import (IsAdmin, IsAuthenticated, IsModerator, IsOwner,
-                          ReadOnly)
+                          IsReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleWriteSerializer)
-from .validators import validate_review_unique
 
 
 class CategoryViewSet(ModelMixinViewSet):
     queryset = Category.objects.all()
     permission_classes = (
-        IsAdmin | ReadOnly,
+        IsAdmin | IsReadOnly,
     )
     serializer_class = CategorySerializer
     filter_backends = (SearchFilter, )
@@ -29,7 +28,7 @@ class CategoryViewSet(ModelMixinViewSet):
 class GenreViewSet(ModelMixinViewSet):
     queryset = Genre.objects.all()
     permission_classes = (
-        IsAdmin | ReadOnly,
+        IsAdmin | IsReadOnly,
     )
     serializer_class = GenreSerializer
     filter_backends = (SearchFilter,)
@@ -40,11 +39,11 @@ class GenreViewSet(ModelMixinViewSet):
 class TitleViewSet(ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (
-        IsAdmin | ReadOnly,
+        IsAdmin | IsReadOnly,
     )
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -55,30 +54,28 @@ class TitleViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (
-        IsAuthenticated | ReadOnly | IsAdmin | IsModerator | IsOwner,
+        IsAdmin | IsModerator | IsOwner | IsAuthenticated | IsReadOnly,
     )
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs['title_id'])
 
     def get_queryset(self):
-        title = self.get_title()
-        return title.reviews.all()
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
         title = self.get_title()
         author = self.request.user
-        validate_review_unique(title, author)
         serializer.save(title=title, author=author)
 
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
-        IsAuthenticated | ReadOnly | IsAdmin | IsModerator | IsOwner,
+        IsAdmin | IsModerator | IsOwner | IsAuthenticated | IsReadOnly,
     )
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_review(self):
         return get_object_or_404(
