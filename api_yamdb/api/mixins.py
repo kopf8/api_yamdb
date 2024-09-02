@@ -3,7 +3,7 @@ from rest_framework.mixins import (CreateModelMixin, DestroyModelMixin,
 from rest_framework.viewsets import GenericViewSet
 
 
-class ModelMixinViewSet(CreateModelMixin, ListModelMixin,
-                        DestroyModelMixin, GenericViewSet):
+class CreateListDestroyViewSet(CreateModelMixin, ListModelMixin,
+                               DestroyModelMixin, GenericViewSet):
     """Custom viewset for genres and categories"""
     pass
