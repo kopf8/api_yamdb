@@ -26,7 +26,7 @@ class IsOwner(permissions.BasePermission):
         )
 
 
-class IsAuthenticated(permissions.BasePermission):
+class IsAuthenticatedAndNoModify(permissions.BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated

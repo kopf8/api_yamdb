@@ -5,9 +5,10 @@ from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -18,8 +19,8 @@ from reviews.models import Category, Genre, Review, Title
 from users.models import ConfirmationCode, CustomUser
 
 from .mixins import CreateListDestroyViewSet
-from .permissions import (IsAdmin, IsAuthenticated, IsModerator, IsOwner,
-                          IsReadOnly, IsSuperuser)
+from .permissions import (IsAdmin, IsAuthenticatedAndNoModify, IsModerator,
+                          IsOwner, IsReadOnly, IsSuperuser)
 from .serializers import (CategorySerializer, CommentSerializer,
                           ConfirmationCodeSerializer, GenreSerializer,
                           ReviewSerializer, SignupSerializer,
@@ -69,7 +70,8 @@ class TitleViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (
-        IsAdmin | IsModerator | IsOwner | IsAuthenticated | IsReadOnly,
+        IsAdmin | IsModerator | IsOwner | IsAuthenticatedAndNoModify
+        | IsReadOnly,
     )
     http_method_names = ('get', 'post', 'patch', 'delete')
     title = 'title_id'
@@ -89,7 +91,8 @@ class ReviewViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
-        IsAdmin | IsModerator | IsOwner | IsAuthenticated | IsReadOnly,
+        IsAdmin | IsModerator | IsOwner | IsAuthenticatedAndNoModify
+        | IsReadOnly,
     )
     http_method_names = ('get', 'post', 'patch', 'delete')
 
@@ -115,85 +118,36 @@ class UserViewSet(ModelViewSet):
     filter_backends = (SearchFilter,)
     lookup_field = 'username'
     search_fields = ('username',)
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
-    @action(detail=False, methods=['get', 'patch'], url_path='me',
-            url_name='me')
-    def me(self, request):
-        if request.method == "GET":
-            serializer = UserSerializer(request.user)
-            return Response(serializer.data)
-        elif request.method == "PATCH":
-            data = request.data.copy()
-            data.pop('role', None)
-            serializer = UserSerializer(request.user, data=data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data)
+    def get_permissions(self):
+        if self.action in (
+            'list', 'retrieve', 'create', 'partial_update', 'destroy'
+        ):
+            return [(IsAdmin | IsSuperuser)()]
+        if self.action in ('retrieve_me', 'update_me'):
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
-    def create(self, request, *args, **kwargs):
-        self.permission_classes = (IsAdmin | IsSuperuser,)
-        self.check_permissions(request)
-        serializer = self.get_serializer(data=request.data)
+    @action(detail=False, methods=['get'], url_path='me', url_name='me')
+    def retrieve_me(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+    @retrieve_me.mapping.patch
+    def update_me(self, request):
+        data = request.data.copy()
+        data.pop('role', None)
+        serializer = UserSerializer(request.user, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED, headers=headers)
+        serializer.save()
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         if 'role' not in serializer.validated_data:
             serializer.save(role='user')
         else:
             serializer.save()
-
-    def list(self, request, *args, **kwargs):
-        self.permission_classes = (IsAdmin | IsSuperuser,)
-        self.check_permissions(request)
-        return super().list(request, *args, **kwargs)
-
-    def retrieve(self, request, *args, **kwargs):
-        self.permission_classes = (IsAdmin | IsSuperuser,)
-        self.check_permissions(request)
-        return super().retrieve(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        return Response(
-            {"detail": "Method 'PUT' not allowed."},
-            status=status.HTTP_405_METHOD_NOT_ALLOWED
-        )
-
-    def partial_update(self, request, *args, **kwargs):
-        if request.user.role == 'user':
-            raise PermissionDenied(
-                "You do not have permission to update this user.")
-        user_to_update = self.get_object()
-        if request.user.role == 'moderator' and request.user != user_to_update:
-            raise PermissionDenied(
-                "Moderators cannot update other users' profiles.")
-        self.permission_classes = (IsAdmin | IsSuperuser,)
-        self.check_object_permissions(request, user_to_update)
-
-        serializer = self.get_serializer(
-            user_to_update, data=request.data,
-            partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def destroy(self, request, *args, **kwargs):
-        user_to_delete = self.get_object()
-
-        if request.user.is_superuser:
-            user_to_delete.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        if request.user.is_admin and not user_to_delete.is_admin:
-            user_to_delete.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        raise PermissionDenied(
-            "You do not have permission to delete this user.")
 
 
 class SignupView(generics.CreateAPIView):
