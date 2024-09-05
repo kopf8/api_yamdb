@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from reviews.models import Category, Comment, CustomUser, Genre, Review, Title
 
+from .mixins import AuthorMixin
 from .validators import validate_review_unique
 
 
@@ -47,11 +48,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'description', 'genre', 'category')
 
 
-class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True
-    )
+class ReviewSerializer(serializers.ModelSerializer, AuthorMixin):
     title = serializers.SlugRelatedField(
         slug_field='name',
         read_only=True
@@ -71,11 +68,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         return data
 
 
-class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True
-    )
+class CommentSerializer(serializers.ModelSerializer, AuthorMixin):
 
     class Meta:
         model = Comment

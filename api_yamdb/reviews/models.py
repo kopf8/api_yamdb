@@ -5,7 +5,6 @@ from users.models import CustomUser
 
 
 class Category(models.Model):
-    """Category model."""
     name = models.CharField(
         verbose_name='Category',
         max_length=200
@@ -25,7 +24,6 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    """Genre model"""
     name = models.CharField(
         verbose_name='Genre',
         max_length=200
@@ -45,7 +43,6 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    """Title model."""
     name = models.CharField(
         verbose_name='Title',
         max_length=200,
@@ -113,7 +110,6 @@ class TitleGenre(models.Model):
 
 
 class Review(models.Model):
-    """Review model"""
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -172,7 +168,6 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    """Comment model"""
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
