@@ -214,30 +214,18 @@ class TokenView(APIView):
 
     def post(self, request):
         serializer = ConfirmationCodeSerializer(data=request.data)
-        if serializer.is_valid():
-            username = serializer.validated_data['username']
-            confirmation_code = serializer.validated_data['confirmation_code']
-            try:
-                user = CustomUser.objects.get(username=username)
-                code = ConfirmationCode.objects.get(user=user)
-                if code.code == confirmation_code:
-                    refresh = RefreshToken.for_user(user)
-                    return Response(
-                        {'token': str(refresh.access_token)},
-                        status=status.HTTP_200_OK
-                    )
-                return Response(
-                    {'error': 'Invalid confirmation code'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            except CustomUser.DoesNotExist:
-                return Response(
-                    {'error': 'User does not exist'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            except ConfirmationCode.DoesNotExist:
-                return Response(
-                    {'error': 'Confirmation code does not exist'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        confirmation_code = serializer.validated_data['confirmation_code']
+        user = get_object_or_404(CustomUser, username=username)
+        code = get_object_or_404(ConfirmationCode, user=user)
+        if code.code == confirmation_code:
+            refresh = RefreshToken.for_user(user)
+            return Response(
+                {'token': str(refresh.access_token)},
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {'error': 'Invalid confirmation code'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
