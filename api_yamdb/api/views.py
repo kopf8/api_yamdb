@@ -2,6 +2,7 @@ import random
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import action
@@ -20,7 +21,7 @@ from users.models import ConfirmationCode, CustomUser
 
 from .mixins import CreateListDestroyViewSet
 from .permissions import (IsAdmin, IsAuthenticatedAndNoModify, IsModerator,
-                          IsOwner, IsReadOnly, IsSuperuser)
+                          IsAuthor, IsReadOnly, IsSuperuser)
 from .serializers import (CategorySerializer, CommentSerializer,
                           ConfirmationCodeSerializer, GenreSerializer,
                           ReviewSerializer, SignupSerializer,
@@ -70,7 +71,7 @@ class TitleViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (
-        IsAdmin | IsModerator | IsOwner | IsAuthenticatedAndNoModify
+        IsAdmin | IsModerator | IsAuthor | IsAuthenticatedAndNoModify
         | IsReadOnly,
     )
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -91,7 +92,7 @@ class ReviewViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
-        IsAdmin | IsModerator | IsOwner | IsAuthenticatedAndNoModify
+        IsAdmin | IsModerator | IsAuthor | IsAuthenticatedAndNoModify
         | IsReadOnly,
     )
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -171,6 +172,7 @@ class SignupView(generics.CreateAPIView):
             fail_silently=False,
         )
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         username = request.data.get('username', None)
         email = request.data.get('email', None)

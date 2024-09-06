@@ -17,7 +17,7 @@ class IsModerator(permissions.BasePermission):
         )
 
 
-class IsOwner(permissions.BasePermission):
+class IsAuthor(permissions.BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated

@@ -31,7 +31,6 @@ class UserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    """Custom User model"""
     username = models.CharField(
         verbose_name='Username',
         max_length=150,
