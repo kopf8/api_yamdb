@@ -3,7 +3,7 @@ import re
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
-from reviews.models import Category, Comment, CustomUser, Genre, Review, Title
+from reviews.models import Category, Comment, User, Genre, Review, Title
 
 from .mixins import AuthorMixin
 from .validators import validate_review_unique
@@ -86,7 +86,7 @@ class UserSerializer(serializers.ModelSerializer):
     role = serializers.CharField(required=False)
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
@@ -101,7 +101,7 @@ class UserSerializer(serializers.ModelSerializer):
                 f'Unaccepted symbols <{value}> in nickname.')
 
         try:
-            user = CustomUser.objects.get(username=value)
+            user = User.objects.get(username=value)
             if self.instance is None or user.id != self.instance.id:
                 raise serializers.ValidationError(
                     "This username is already taken.")
@@ -112,7 +112,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         try:
-            user = CustomUser.objects.get(email=value)
+            user = User.objects.get(email=value)
             if self.instance is None or user.id != self.instance.id:
                 raise serializers.ValidationError(
                     "This email is already in use.")
@@ -138,7 +138,7 @@ class SignupSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = ('username', 'email')
 
     def validate_username(self, value):

@@ -17,7 +17,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.filters import TitleFilter
 from reviews.models import Category, Genre, Review, Title
-from users.models import ConfirmationCode, CustomUser
+from users.models import ConfirmationCode, User
 
 from .mixins import CreateListDestroyViewSet
 from .permissions import (IsAdmin, IsAuthenticatedAndNoModify, IsModerator,
@@ -114,7 +114,7 @@ class CommentViewSet(ModelViewSet):
 
 
 class UserViewSet(ModelViewSet):
-    queryset = CustomUser.objects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_backends = (SearchFilter,)
     lookup_field = 'username'
@@ -152,7 +152,7 @@ class UserViewSet(ModelViewSet):
 
 
 class SignupView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
+    queryset = User.objects.all()
     serializer_class = SignupSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -176,7 +176,7 @@ class SignupView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         username = request.data.get('username', None)
         email = request.data.get('email', None)
-        user = CustomUser.objects.filter(
+        user = User.objects.filter(
             email=email,
             username=username
         ).first()
@@ -190,8 +190,8 @@ class SignupView(generics.CreateAPIView):
         email = serializer.validated_data['email']
         username = serializer.validated_data['username']
 
-        existing_email = CustomUser.objects.filter(email=email).first()
-        existing_username = CustomUser.objects.filter(
+        existing_email = User.objects.filter(email=email).first()
+        existing_username = User.objects.filter(
             username=username
         ).first()
 
@@ -219,7 +219,7 @@ class TokenView(APIView):
         serializer.is_valid(raise_exception=True)
         username = serializer.validated_data['username']
         confirmation_code = serializer.validated_data['confirmation_code']
-        user = get_object_or_404(CustomUser, username=username)
+        user = get_object_or_404(User, username=username)
         code = get_object_or_404(ConfirmationCode, user=user)
         if code.code == confirmation_code:
             refresh = RefreshToken.for_user(user)

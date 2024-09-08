@@ -30,7 +30,7 @@ class UserManager(BaseUserManager):
         return self.create_user(email, username, password, **extra_fields)
 
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     username = models.CharField(
         verbose_name='Username',
         max_length=150,
@@ -99,5 +99,5 @@ class CustomUser(AbstractUser):
 
 
 class ConfirmationCode(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     code = models.CharField(max_length=6)

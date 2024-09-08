@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from users.models import CustomUser
+from users.models import User
 
 
 class Category(models.Model):
@@ -120,7 +120,7 @@ class Review(models.Model):
         max_length=500
     )
     author = models.ForeignKey(
-        CustomUser,
+        User,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='author'
@@ -179,7 +179,7 @@ class Comment(models.Model):
         max_length=200
     )
     author = models.ForeignKey(
-        CustomUser,
+        User,
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name='author'
